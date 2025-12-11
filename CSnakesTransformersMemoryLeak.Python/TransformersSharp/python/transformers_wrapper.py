@@ -1,0 +1,88 @@
+﻿# https://github.com/tonybaloney/CSnakes/issues/653
+import sys
+sys.exec_prefix = sys.executable
+sys.base_exec_prefix = sys.executable
+sys.prefix = sys.executable
+
+from typing import Any, Generator, Optional
+from transformers import pipeline as TransformersPipeline, Pipeline, TextGenerationPipeline
+from huggingface_hub import login
+import torch
+from transformers import AutoTokenizer, PreTrainedTokenizerBase
+from collections.abc import Buffer
+from PIL import Image
+import itertools;
+
+def pipeline(task: Optional[str] = None, model: Optional[str] = None, tokenizer: Optional[str] = None, torch_dtype: Optional[str] = None, device: Optional[str] = None, trust_remote_code: bool = False, **kwargs):
+    """
+    Create a pipeline for a specific task using the Hugging Face Transformers library.
+    """
+    if torch_dtype is not None:
+        if not hasattr(torch, torch_dtype.lower()):
+            raise ValueError(f"Unsupported torch_dtype: {torch_dtype}")
+        else:
+            torch_dtype = getattr(torch, torch_dtype.lower());
+
+    return TransformersPipeline(task=task, model=model, tokenizer=tokenizer, torch_dtype=torch_dtype, device=device, trust_remote_code=trust_remote_code, **kwargs);
+
+
+def invoke_text_generation_pipeline_with_template(pipeline: TextGenerationPipeline, 
+                             messages: list[dict[str, str]],
+                             max_length: Optional[int] = None,
+                             max_new_tokens: Optional[int] = None,
+                             min_length: Optional[int] = None,
+                             min_new_tokens: Optional[int] = None,
+                             stop_strings: Optional[list[str]] = None,
+                             temperature: Optional[float] = 1.0,
+                             top_k: Optional[int] = 50,
+                             top_p: Optional[float] = 1.0,
+                             min_p: Optional[float] = None,
+                            ) -> list[dict[str, str]]:
+    """
+    Invoke a text generation pipeline with a chat template.
+    Use pytorch for intermediate tensors (template -> generate)
+    """
+    # Apply template to messages
+    r = pipeline(messages, max_length=max_length, max_new_tokens=max_new_tokens, min_length=min_length, min_new_tokens=min_new_tokens, stop=stop_strings, temperature=temperature, top_k=top_k, top_p=top_p, min_p=min_p)
+    return r[0]['generated_text']
+
+
+def huggingface_login(token: str) -> None:
+    login(token=token)
+
+
+def call_pipeline(pipeline: Pipeline, input: str, **kwargs) -> list[dict[str, Any]]:
+    return list(itertools.chain.from_iterable(pipeline(input, **kwargs)));
+
+
+def call_pipeline_with_list(pipeline: Pipeline, input: list[str], **kwargs) -> list[dict[str, Any]]:
+    return list(itertools.chain.from_iterable(pipeline(input, **kwargs)));
+
+
+def tokenizer_from_pretrained(model: str,
+                              cache_dir: Optional[str] = None,
+                              force_download: bool = False,
+                              revision: Optional[str] = 'main',
+                              trust_remote_code: bool = False,
+                              use_fast: bool = True) -> PreTrainedTokenizerBase:
+    return AutoTokenizer.from_pretrained(model, cache_dir=cache_dir, force_download=force_download, revision=revision, trust_remote_code=trust_remote_code, use_fast=use_fast);
+
+
+def tokenize_text_with_attention(tokenizer: PreTrainedTokenizerBase, text: str) -> tuple[list[int], list[int]]:
+    result = tokenizer(text)
+    return result['input_ids'], result['attention_mask']
+
+def tokenizer_text_as_ndarray(tokenizer: PreTrainedTokenizerBase, text: str, add_special_tokens: Optional[bool] = True) -> Buffer:
+    result = tokenizer(text, return_tensors='np', return_attention_mask=False, add_special_tokens=add_special_tokens)
+    return result['input_ids'][0]
+
+def tokenizer_text_with_offsets(tokenizer: PreTrainedTokenizerBase, text: str, add_special_tokens: Optional[bool] = True) -> tuple[Buffer, Buffer]:
+    result = tokenizer(text, return_tensors='np', return_offsets_mapping=True, return_attention_mask=False, add_special_tokens=add_special_tokens)
+    input_ids = result['input_ids']
+    offsets = result['offset_mapping']
+    return input_ids[0], offsets[0]
+
+def tokenizer_decode(tokenizer: PreTrainedTokenizerBase, input_ids: list[int], skip_special_tokens: bool = False,
+                     clean_up_tokenization_spaces: Optional[bool] = None) -> str:
+    decoded = tokenizer.decode(input_ids, skip_special_tokens=skip_special_tokens, clean_up_tokenization_spaces=clean_up_tokenization_spaces)
+    return decoded

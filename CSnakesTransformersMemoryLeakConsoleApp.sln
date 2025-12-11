@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSnakesTransformersMemoryLeakConsoleApp", "CSnakesTransformersMemoryLeakConsoleApp\CSnakesTransformersMemoryLeakConsoleApp.csproj", "{8880BEC4-A9E5-42B7-85C3-C938117F202C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSnakesTransformersMemoryLeak.Python", "CSnakesTransformersMemoryLeak.Python\CSnakesTransformersMemoryLeak.Python.csproj", "{F0FB52BC-6254-4BE2-B620-E978DF505336}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8880BEC4-A9E5-42B7-85C3-C938117F202C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8880BEC4-A9E5-42B7-85C3-C938117F202C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8880BEC4-A9E5-42B7-85C3-C938117F202C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8880BEC4-A9E5-42B7-85C3-C938117F202C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F0FB52BC-6254-4BE2-B620-E978DF505336}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F0FB52BC-6254-4BE2-B620-E978DF505336}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F0FB52BC-6254-4BE2-B620-E978DF505336}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F0FB52BC-6254-4BE2-B620-E978DF505336}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
