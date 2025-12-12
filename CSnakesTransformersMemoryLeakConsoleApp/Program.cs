@@ -172,6 +172,8 @@ static void LogProcessMemoryInfo(int? iterationNumber, Action action, bool gc = 
     memoryText =
     $"""
     
+    Current Thread ID: {Environment.CurrentManagedThreadId}
+    
     {iterationText}:
     
     {memoryText}
