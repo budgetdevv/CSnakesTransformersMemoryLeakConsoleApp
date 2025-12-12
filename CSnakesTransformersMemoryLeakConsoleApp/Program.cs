@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using CSnakesTransformersMemoryLeak.Python;
 using CSnakesTransformersMemoryLeakConsoleApp.Classification;
 using CSnakesTransformersMemoryLeakConsoleApp.Classification.Classifiers;
@@ -84,28 +85,47 @@ var politeGuardClassifier = app.Services.GetRequiredService<PoliteGuardClassifie
 if (doWarmUp)
 {
     Console.Error.WriteLine("Running warm-up.");
-    LogProcessMemoryInfo(() =>
-        _ = politeGuardClassifier.Classify("This is a warm-up inference.").ToArray());
+
+    LogProcessMemoryInfo(
+        iterationNumber: null,
+        () => _ = politeGuardClassifier.Classify("This is a warm-up inference.").ToArray()
+    );
+
     Console.Error.WriteLine("Warm-up complete.");
 }
 
 foreach (var iteration in Enumerable.Range(1, iterations))
 {
-    LogProcessMemoryInfo(gc: gc, action: () =>
-    {
-        for (var i = 0; i < batchSize; i++)
+    LogProcessMemoryInfo(
+        iterationNumber: iteration,
+        gc: gc,
+        action: () =>
         {
-            var results =
-                from c in politeGuardClassifier.Classify(text)
-                select $"{c.label} ({(int)c.label}) = {c.score:0.00}";
-
-            if (printInference)
+            for (var i = 0; i < batchSize; i++)
             {
-                Console.Write($"{iteration,4}: ");
-                Console.WriteLine(string.Join(", ", results));
+                var results =
+                    from c in politeGuardClassifier.Classify(text)
+                    select $"{c.label} ({(int)c.label}) = {c.score:0.00}";
+
+                if (printInference)
+                {
+                    Console.Write($"{iteration,4}: ");
+                    Console.WriteLine(string.Join(", ", results));
+                }
+
+                else
+                {
+                    FakeConsume(results);
+
+                    [MethodImpl(MethodImplOptions.NoInlining)]
+                    static void FakeConsume(IEnumerable<string> results)
+                    {
+                        // Do nothing...
+                    }
+                }
             }
         }
-    });
+    );
 
     if (delayMS.HasValue)
     {
@@ -114,7 +134,7 @@ foreach (var iteration in Enumerable.Range(1, iterations))
     }
 }
 
-static void LogProcessMemoryInfo(Action action, bool gc = false)
+static void LogProcessMemoryInfo(int? iterationNumber, Action action, bool gc = false)
 {
     using var process = Process.GetCurrentProcess();
 
@@ -138,12 +158,25 @@ static void LogProcessMemoryInfo(Action action, bool gc = false)
     action();
     var after = GetMemoryInfo();
 
-    Console.Error.WriteLine(string.Join(" | ",
+    var memoryText = string.Join(" | ",
         $"Working: {after.WorkingSet,8:0.00} MB ({after.WorkingSet - before.WorkingSet,8:+0.00;-0.00;0.00} MB)",
         $"Private: {after.Private,8:0.00} MB ({after.Private - before.Private,8:+0.00;-0.00;0.00} MB)",
         $"VM: {after.Virtual,8:0.00} MB ({after.Virtual - before.Virtual,8:+0.00;-0.00;0.00} MB)",
         $"Paged: {after.Paged,8:0.00} MB ({after.Paged - before.Paged,8:+0.00;-0.00;0.00} MB)"
-    ));
+    );
+
+    var iterationText = iterationNumber.HasValue ?
+        $"Iteration {iterationNumber.GetValueOrDefault()}" :
+        "Warm-up Iteration";
+
+    memoryText =
+    $"""
+    {iterationText}:
+    
+    {memoryText}
+    """;
+
+    Console.Error.WriteLine(memoryText);
 
     static float BytesToMegabytes(long bytes) => (float) bytes / 1024 / 1024;
 }
