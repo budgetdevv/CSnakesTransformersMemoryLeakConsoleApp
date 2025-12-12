@@ -11,6 +11,7 @@ var iterations = 1;
 var batchSize = 100;
 var gc = false;
 var doWarmUp = false;
+int? delayMS = null;
 
 using (var arg = args.AsEnumerable().GetEnumerator())
 {
@@ -29,6 +30,20 @@ using (var arg = args.AsEnumerable().GetEnumerator())
                 batchSize = int.Parse(arg.Current, NumberStyles.None);
                 break;
             case "-g" or "--gc": gc = true; break;
+            //  Optional -delay flag for specifying delay ( MS ). It sets the delayMS variable.
+            case "-delay":
+                if (!arg.MoveNext())
+                    throw new Exception("Missing value for: -delay");
+
+                if (!int.TryParse(arg.Current, out int delay))
+                {
+                    throw new Exception("Invalid value for: -delay");
+                }
+
+                delayMS = delay;
+
+                break;
+
             case "-w" or "--warm-up": doWarmUp = true; break;
             case "-h" or "--help":
                 Console.WriteLine($"""
@@ -39,6 +54,7 @@ using (var arg = args.AsEnumerable().GetEnumerator())
                       -b, --batch-size SIZE    Batch size (default: {batchSize})
                       -g, --gc                 Run full GC between iterations
                       -h, --help               Show this help message
+                      -delay                   Delay in milliseconds between iterations
 
                     """);
                 return;
@@ -81,6 +97,12 @@ foreach (var iteration in Enumerable.Range(1, iterations))
             Console.WriteLine(string.Join(", ", results));
         }
     });
+
+    if (delayMS.HasValue)
+    {
+        Console.WriteLine($"Delaying for {delayMS} ms...");
+        await Task.Delay(delayMS.GetValueOrDefault());
+    }
 }
 
 static void LogProcessMemoryInfo(Action action, bool gc = false)
