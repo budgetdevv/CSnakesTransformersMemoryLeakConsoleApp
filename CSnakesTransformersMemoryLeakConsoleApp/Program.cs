@@ -31,12 +31,12 @@ using (var arg = args.AsEnumerable().GetEnumerator())
                 batchSize = int.Parse(arg.Current, NumberStyles.None);
                 break;
             case "-g" or "--gc": gc = true; break;
-            //  Optional -delay flag for specifying delay ( MS ). It sets the delayMS variable.
+
             case "-delay":
                 if (!arg.MoveNext())
                     throw new Exception("Missing value for: -delay");
 
-                if (!int.TryParse(arg.Current, out int delay))
+                if (!int.TryParse(arg.Current, out var delay))
                 {
                     throw new Exception("Invalid value for: -delay");
                 }
