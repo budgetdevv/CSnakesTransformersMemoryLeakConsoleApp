@@ -12,6 +12,7 @@ var batchSize = 100;
 var gc = false;
 var doWarmUp = false;
 int? delayMS = null;
+bool printInference = true;
 
 using (var arg = args.AsEnumerable().GetEnumerator())
 {
@@ -44,6 +45,10 @@ using (var arg = args.AsEnumerable().GetEnumerator())
 
                 break;
 
+            case "-no-print-inference":
+                printInference = false;
+                break;
+
             case "-w" or "--warm-up": doWarmUp = true; break;
             case "-h" or "--help":
                 Console.WriteLine($"""
@@ -55,7 +60,7 @@ using (var arg = args.AsEnumerable().GetEnumerator())
                       -g, --gc                 Run full GC between iterations
                       -h, --help               Show this help message
                       -delay                   Delay in milliseconds between iterations
-
+                      -no-print-inference      Do not print inference results
                     """);
                 return;
             default: // positional arguments...
@@ -90,11 +95,15 @@ foreach (var iteration in Enumerable.Range(1, iterations))
     {
         for (var i = 0; i < batchSize; i++)
         {
-            Console.Write($"{iteration,4}: ");
             var results =
                 from c in politeGuardClassifier.Classify(text)
                 select $"{c.label} ({(int)c.label}) = {c.score:0.00}";
-            Console.WriteLine(string.Join(", ", results));
+
+            if (printInference)
+            {
+                Console.Write($"{iteration,4}: ");
+                Console.WriteLine(string.Join(", ", results));
+            }
         }
     });
 
