@@ -159,10 +159,10 @@ static void LogProcessMemoryInfo(int? iterationNumber, Action action, bool gc = 
     var after = GetMemoryInfo();
 
     var memoryText = string.Join(" | ",
-        $"Working: {after.WorkingSet,8:0.00} MB ({after.WorkingSet - before.WorkingSet,8:+0.00;-0.00;0.00} MB)",
-        $"Private: {after.Private,8:0.00} MB ({after.Private - before.Private,8:+0.00;-0.00;0.00} MB)",
-        $"VM: {after.Virtual,8:0.00} MB ({after.Virtual - before.Virtual,8:+0.00;-0.00;0.00} MB)",
-        $"Paged: {after.Paged,8:0.00} MB ({after.Paged - before.Paged,8:+0.00;-0.00;0.00} MB)"
+        $"Working: {after.WorkingSet,8:0.00000} MB ({after.WorkingSet - before.WorkingSet,8:+0.00000;-0.00000;0.00000} MB)",
+        $"Private: {after.Private,8:0.00000} MB ({after.Private - before.Private,8:+0.00000;-0.00000;0.00000} MB)",
+        $"VM: {after.Virtual,8:0.00000} MB ({after.Virtual - before.Virtual,8:+0.00000;-0.00000;0.00000} MB)",
+        $"Paged: {after.Paged,8:0.00000} MB ({after.Paged - before.Paged,8:+0.00000;-0.00000;0.00000} MB)"
     );
 
     var iterationText = iterationNumber.HasValue ?
