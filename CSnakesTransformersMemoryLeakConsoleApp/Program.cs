@@ -171,6 +171,7 @@ static void LogProcessMemoryInfo(int? iterationNumber, Action action, bool gc = 
 
     memoryText =
     $"""
+    
     {iterationText}:
     
     {memoryText}
